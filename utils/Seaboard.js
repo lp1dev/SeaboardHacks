@@ -6,6 +6,7 @@ class Seaboard {
     this.channels = {}
     this.numKeys = 24
     this.firstKey = 0
+    this.messagesSubscriptions = []
   }
   connect () {
     return new Promise((resolve, reject) => {
@@ -35,9 +36,21 @@ class Seaboard {
     } else if (parsedMessage.pitchBend) {
       this.channels[parsedMessage.channel]['pitchBend'] = parsedMessage.pitchBend
     }
-    if (typeof this.afterChannelUpdate === 'function') {
-      this.afterChannelUpdate(this.channels)
+    if (this.messagesSubscriptions.length) {
+      this.messagesSubscriptions.forEach(callback => {
+        if (typeof callback === 'function') {
+          callback(this.channels)
+        }
+      })
     }
+  }
+  subscribeToMessages (callback) {
+    const id = this.messagesSubscriptions.length
+    this.messagesSubscriptions.push(callback)
+    return id
+  }
+  unsubscribeToMessages (id) {
+    this.messagesSubscriptions.splice(id, 1)
   }
   updateKeysRange (note) {
     this.firstKey = 0

@@ -91,7 +91,6 @@ class MIDIController {
         parsed.pitchBend = parsed.data2 - 64
         break
     }
-    console.log('parsedMessage', parsed)
     return parsed
   }
 }
