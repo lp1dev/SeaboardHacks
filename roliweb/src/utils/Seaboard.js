@@ -4,6 +4,8 @@ class Seaboard {
   constructor (MIDIPort) {
     this.MIDIPort = MIDIPort
     this.channels = {}
+    this.numKeys = 24
+    this.firstKey = 0
   }
   connect () {
     return new Promise((resolve, reject) => {
@@ -18,6 +20,7 @@ class Seaboard {
   onMessage (message) {
     const parsedMessage = MIDIController.parseMessage(message.data)
     if (parsedMessage.type === 'Note ON') {
+      this.updateKeysRange(parsedMessage.note)
       this.channels[parsedMessage.channel] = this.channels[parsedMessage.channel] || {posY: 0}
       this.channels[parsedMessage.channel]['note'] = parsedMessage.note
     } else if (parsedMessage.type === 'Note OFF') {
@@ -36,6 +39,13 @@ class Seaboard {
       this.afterChannelUpdate(this.channels)
     }
   }
+  updateKeysRange (note) {
+    this.firstKey = 0
+    while (note > this.firstKey + this.numKeys) {
+      this.firstKey += this.numKeys / 2
+    }
+    console.log('Updated firstKey', this.firstKey)
+  }
   getCoordinates () {
     const coordinates = []
     for (const index in this.channels) {
@@ -43,9 +53,9 @@ class Seaboard {
       const channelCoordinates = {}
       if (channel.note !== undefined) {
         if (channel.pitchBend) {
-          channelCoordinates.x = channel.note + (channel.pitchBend === -1 ? 0 : channel.pitchBend * 23 / 30)
+          channelCoordinates.x = (channel.note + (channel.pitchBend === -1 ? 0 : channel.pitchBend * 23 / 30)) - this.firstKey
         } else {
-          channelCoordinates.x = channel.note
+          channelCoordinates.x = channel.note - this.firstKey
         }
         channelCoordinates.y = 125 - channel.posY
         channelCoordinates.size = channel.pressure

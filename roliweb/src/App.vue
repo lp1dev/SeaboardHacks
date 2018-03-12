@@ -5,6 +5,7 @@
       <select v-model="chosenInput">
         <option
         v-for="(seaboardInput, index) in seaboardInputs" 
+        :selected="!index ? 'selected' : ''"
         :key="index">
           {{seaboardInput.name}}
         </option>
@@ -22,7 +23,13 @@
       height="256"
       viewPort="0 0 1150 256"
       >
+    
       <rect width="100%" height="100%" fill="blue"></rect>
+        <line v-for="n in 24" 
+        :key="n" 
+        :x1="n * (1150 / 23)" y1="0" 
+        :x2="n * (1150 / 23)" y2="256" 
+        style="stroke:rgb(255,0,0);stroke-width:2" />
         <circle 
         v-for="(coordinates, index) in seaboard.getCoordinates()"
         :key="index"
