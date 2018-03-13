@@ -1,4 +1,4 @@
-class MIDIController {
+class MIDIControllerClass {
   constructor () {
     this.onMidiMessage = null
     if (typeof navigator['requestMIDIAccess'] === 'function') {
@@ -55,6 +55,10 @@ class MIDIController {
         .catch(error => reject(error))
     })
   }
+  noteToFrequency (note) {
+    const a = 440
+    return (a / 32) * Math.pow(2, (note - 9) / 12)
+  }
   parseMessage (message) {
     const parsed = {}
     parsed.channelVoiceMessage = message[0]
@@ -89,10 +93,11 @@ class MIDIController {
       case '1110':
         parsed.type = 'Pitch Bend Change'
         parsed.pitchBend = parsed.data2 - 64
+        parsed.pitchBend = parsed.pitchBend !== -1 ? parsed.pitchBend : 0
         break
     }
     return parsed
   }
 }
 
-export default new MIDIController()
+export const MIDIController = new MIDIControllerClass()
