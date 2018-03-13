@@ -1,3 +1,62 @@
+const defaultSynthConf = {
+  fadeTime: 0.2, // The time for each sound to fade in and out
+  type: 'sine' // "sine", "square", "sawtooth", "triangle" and "custom"
+}
+
+class Synthetizer {
+  constructor (name, configuration = defaultSynthConf) {
+    this.name = name
+    this.audioContext = new (window.AudioContext || window.webkitAudioContext)()
+    this.configuration = configuration
+    this.oscillators = {}
+    this.gainNodes = {}
+    this.notes = {}
+  }
+  handleMessage (message) {
+    switch (message.type) {
+      case 'Note ON':
+        this.message = message
+        if (!this.oscillators[message.channel]) {
+          this.initOscillator(message.note, message.channel)
+        }
+        this.oscillators[message.channel].frequency.value = MIDIController.noteToFrequency(message.note)
+        this.notes[message.channel] = message.note
+        break
+      case 'NOTE OFF':
+        this.gainNodes[message.channel].gain.setTargetAtTime(0, this.audioContext.currentTime, this.configuration.fadeTime)
+        break
+      case 'Channel Pressure (After-touch)':
+        this.gainNodes[message.channel].gain.setTargetAtTime(message.pressure / 100, this.audioContext.currentTime, this.configuration.fadeTime)
+        break
+      case 'Pitch Bend Change':
+        const noteModulation = this.notes[message.channel] + message.pitchBend
+        if (!isNaN(noteModulation)) {
+          this.oscillators[message.channel].frequency.value = MIDIController.noteToFrequency(noteModulation)
+        }
+        break
+    }
+  }
+  initOscillator (note, channel) {
+    const frequency = MIDIController.noteToFrequency(note)
+    let gainNode = this.gainNodes[channel]
+    let oscillator = this.oscillators[channel]
+    if (!gainNode) {
+      gainNode = this.audioContext.createGain()
+      this.gainNodes[channel] = gainNode
+      gainNode.gain.value = 0
+      gainNode.connect(this.audioContext.destination)
+    }
+    if (!oscillator) {
+      oscillator = this.audioContext.createOscillator()
+      oscillator.type = this.configuration.type
+      this.oscillators[channel] = oscillator
+      oscillator.connect(gainNode)
+    }
+    oscillator.frequency.value = frequency
+    oscillator.start()
+  }
+}
+
 class MIDIControllerClass {
   constructor () {
     this.onMidiMessage = null
@@ -101,3 +160,4 @@ class MIDIControllerClass {
 }
 
 export const MIDIController = new MIDIControllerClass()
+export { Synthetizer }

@@ -43,7 +43,6 @@ export default {
   name: 'Visualizer',
   props: {'seaboard': {required: true}},
   created () {
-    console.log('Visualizer :: seaboard', this.seaboard)
     this.seaboard.subscribeToMessages(channels => {
       this.$forceUpdate()
     })

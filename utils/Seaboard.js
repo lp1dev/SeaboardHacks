@@ -21,19 +21,25 @@ class Seaboard {
   onMessage (message) {
     const parsedMessage = MIDIController.parseMessage(message.data)
     this.channels[parsedMessage.channel] = this.channels[parsedMessage.channel] || {posY: 0}
-    if (parsedMessage.type === 'Note ON') {
-      this.updateKeysRange(parsedMessage.note)
-      this.channels[parsedMessage.channel]['note'] = parsedMessage.note
-    } else if (parsedMessage.type === 'Note OFF') {
-      this.channels[parsedMessage.channel] = {posY: 0}
-    } else if (parsedMessage.type === 'Channel Pressure (After-touch)') {
-      this.channels[parsedMessage.channel]['pressure'] = parsedMessage.pressure
-    } else if (parsedMessage.type === 'Control change') {
-      if (this.channels[parsedMessage.channel]['note'] !== undefined) {
-        this.channels[parsedMessage.channel]['posY'] = parsedMessage.controlChange
-      }
-    } else if (parsedMessage.type === 'Pitch Bend Change') {
-      this.channels[parsedMessage.channel]['pitchBend'] = parsedMessage.pitchBend
+    switch (parsedMessage.type) {
+      case 'Note ON':
+        this.updateKeysRange(parsedMessage.note)
+        this.channels[parsedMessage.channel]['note'] = parsedMessage.note
+        break
+      case 'Note OFF':
+        this.channels[parsedMessage.channel] = {posY: 0}
+        break
+      case 'Channel Pressure (After-touch)':
+        this.channels[parsedMessage.channel]['pressure'] = parsedMessage.pressure
+        break
+      case 'Control change':
+        if (this.channels[parsedMessage.channel]['note'] !== undefined) {
+          this.channels[parsedMessage.channel]['posY'] = parsedMessage.controlChange
+        }
+        break
+      case 'Pitch Bend Change':
+        this.channels[parsedMessage.channel]['pitchBend'] = parsedMessage.pitchBend
+        break
     }
     if (this.messagesSubscriptions.length) {
       this.messagesSubscriptions.forEach(callback => {
@@ -52,9 +58,14 @@ class Seaboard {
     this.messagesSubscriptions.splice(id, 1)
   }
   updateKeysRange (note) {
-    this.firstKey = 0
-    while (note > this.firstKey + this.numKeys) {
-      this.firstKey += this.numKeys / 2
+    if (note > (this.firstKey + this.numKeys)) {
+      while (note > this.firstKey + this.numKeys) {
+        this.firstKey += this.numKeys / 2
+      }
+    } else if (note < this.firstKey) {
+      while (note < this.firstKey) {
+        this.firstKey -= this.numKeys / 2
+      }
     }
   }
   getCoordinates () {
