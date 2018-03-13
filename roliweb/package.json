@@ -11,6 +11,7 @@
     "build": "node build/build.js"
   },
   "dependencies": {
+    "dsp.js-browser": "^1.0.1",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1"
   },

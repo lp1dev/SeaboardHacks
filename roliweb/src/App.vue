@@ -20,7 +20,9 @@
       <h2>Visualizer</h2>
       <vizualiser :seaboard="seaboard"/>
       <h2>Synthetizers</h2>
-      <synthetizers :seaboard="seaboard"/>
+      <synthetizers :seaboard="seaboard"/>      
+      <!-- <h2>Sample</h2>
+      <sample :seaboard="seaboard"/> -->
     </div>
   </div>
 </template>
@@ -30,10 +32,11 @@ import { MIDIController } from "@/utils/MIDI"
 import Seaboard from "@/utils/Seaboard"
 import Vizualiser from '@/components/Visualizer'
 import Synthetizers from '@/components/Synthetizers'
+import Sample from '@/components/Sample'
 
 export default {
   name: "App",
-  components: { Vizualiser, Synthetizers },
+  components: { Vizualiser, Synthetizers, Sample },
   data() {
     return {
       seaboardInputs: [],

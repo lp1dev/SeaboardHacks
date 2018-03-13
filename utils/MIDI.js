@@ -1,14 +1,14 @@
 const defaultSynthConf = {
   fadeTime: 0.2, // The time for each sound to fade in and out
-  type: 'sine' // "sine", "square", "sawtooth", "triangle" and "custom"
+  type: 'sine' // "sine", "square", "sawtooth", "triangle" and "custom". Custom uses a custom PeriodicWave bound with setPeriodicWave
 }
 
 class Synthetizer {
   constructor (name, configuration = defaultSynthConf) {
     this.name = name
-    this.audioContext = new (window.AudioContext || window.webkitAudioContext)()
     this.configuration = configuration
     this.oscillators = {}
+    this.audioContext = MIDIController.audioContext
     this.gainNodes = {}
     this.notes = {}
   }
@@ -48,7 +48,9 @@ class Synthetizer {
     }
     if (!oscillator) {
       oscillator = this.audioContext.createOscillator()
-      oscillator.type = this.configuration.type
+      if (oscillator.type !== this.configuration.type) {
+        oscillator.type = this.configuration.type
+      }
       this.oscillators[channel] = oscillator
       oscillator.connect(gainNode)
     }
@@ -57,9 +59,66 @@ class Synthetizer {
   }
 }
 
+class CustomSynthetizer extends Synthetizer {
+  /**
+   * CustomSynthetizer
+   * @param {string} name
+   * @param {Object} configuration
+   * @param {UInt32Array} sin // sin[0] == DC Offset; ranges go from -1 to 1, we set the offset in the middle to start the curve at 0
+   * @param {UInt32Array} cosin // cosin[0] == DC Offset
+   * @param {bool} disableNormalisation // If normalized, the resulting wave will have a maximum absolute peak value of 1.
+   */
+  constructor (name, configuration = defaultSynthConf, sin, cosin, disableNormalization = false) {
+    super(name, configuration)
+    this.periodicWave = this.audioContext.createPeriodicWave(sin, cosin, {disableNormalization: disableNormalization})
+    this.sin = sin
+    this.cosin = cosin
+    this.custom = true
+  }
+  initOscillator (note, channel) {
+    const frequency = MIDIController.noteToFrequency(note)
+    let gainNode = this.gainNodes[channel]
+    let oscillator = this.oscillators[channel]
+    if (!gainNode) {
+      gainNode = this.audioContext.createGain()
+      this.gainNodes[channel] = gainNode
+      gainNode.gain.value = 0
+      gainNode.connect(this.audioContext.destination)
+    }
+    if (!oscillator) {
+      oscillator = this.audioContext.createOscillator()
+      oscillator.setPeriodicWave(this.periodicWave)
+      this.oscillators[channel] = oscillator
+      oscillator.connect(gainNode)
+    }
+    oscillator.frequency.value = frequency
+    oscillator.start()
+  }
+}
+
+class FunctionSynthetizer extends CustomSynthetizer {
+   /**
+   * CustomSynthetizer
+   * @param {string} name
+   * @param {Object} configuration
+   * @param {function} funct // the synthetizer function
+   * @param {bool} disableNormalisation // If normalized, the resulting wave will have a maximum absolute peak value of 1.
+   */
+  constructor (name, configuration = defaultSynthConf, funct, disableNormalization = false, numSamples = 12) {
+    const sin = []
+    const cos = new Int8Array(numSamples)
+    sin[0] = 0
+    for (let i = 1; i < numSamples; i++) {
+      sin.push(funct(i))
+    }
+    super(name, configuration, sin, cos, disableNormalization)
+  }
+}
+
 class MIDIControllerClass {
   constructor () {
     this.onMidiMessage = null
+    this.audioContext = new (window.AudioContext || window.webkitAudioContext)()
     if (typeof navigator['requestMIDIAccess'] === 'function') {
       console.log('MIDIController :: Compatible browser found')
       this.compatibleBrowser = true
@@ -160,4 +219,4 @@ class MIDIControllerClass {
 }
 
 export const MIDIController = new MIDIControllerClass()
-export { Synthetizer }
+export { Synthetizer, CustomSynthetizer, FunctionSynthetizer }

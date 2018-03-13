@@ -7,22 +7,26 @@
        <option v-for="synth in synthetizers" :key="synth.name" selected> {{ synth.name }}</option>
       </select>
     </div>
-    Octave : {{ seaboard.firstKey / seaboard.numKeys }}
-    <pre>{{ JSON.stringify(message) }}</pre>
+    Octave : {{ seaboard.firstKey / seaboard.numKeys }}<br/>
+    <synth-graph v-if="synthetizer" :synth="synthetizer"/>
+    <!-- <pre>{{ JSON.stringify(message) }}</pre> -->
   </div>
 </template>
 
 <script>
-import synthetizers from '@/utils/Synthetizers.js'
+import SynthGraph from '@/components/SynthGraph'
+import synthetizers from '@/utils/Synthetizers'
 
 export default {
   name: 'Synthetizers',
+  components: { SynthGraph },
   props: {'seaboard': {required: true}},
   data () {
     return {
       message: '',
       synthetizers: synthetizers,
-      selected: ''
+      selected: '',
+      synthetizer: null
     }
   },
   created () {
@@ -39,6 +43,7 @@ export default {
       synthetizers.forEach(synthetizer => {
         if (synthetizer.name === name) {
           this.synthetizer = synthetizer
+          console.log(synthetizer)
         }
       })
     }
