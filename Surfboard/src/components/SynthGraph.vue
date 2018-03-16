@@ -1,4 +1,5 @@
 <template>
+<div class="app-container synth-graph">
 <div v-if="synth.custom">
   <svg width="80vh" height="60vh" :viewBox="`0 0 ${width} ${height}`">
     <rect :fill="backgroundColor" :width="width" :height="height"/>
@@ -14,13 +15,10 @@
     <circle v-for="(sincos, index) in sinCos" :key="index+'-sincosDot'" r="0.2" :stroke="sinCosColor" stroke-width="0.2" :cx="(index) * stepX + 2" :cy="-sincos + (height / 2)"/>
     <line v-for="(sincos, index) in sinCos"  :key="index+'-sincosLine'" v-if="index" :x1="(index - 1) * stepX + 2" :y1="-sinCos[index - 1] + (height / 2)" :x2="index * stepX + 2" :y2="-sincos + (height / 2)" :stroke="sinCosColor" stroke-width="0.1" />
   </svg>
-  {{height}}
-  <p :style="{color: sinColor}">Sinus</p>
-  <p :style="{color: cosColor}">Cosinus</p>
-  <p :style="{color: sinCosColor}">Sinus + Cosinus</p>
 </div>
 <div v-else>
-  <h5>Only custom synthetizers can be represented by a graph</h5>
+  Only custom synthetizers can be represented by a graph
+</div>
 </div>
 </template>
 
@@ -44,7 +42,7 @@ export default {
     },
     height () {
       if (this.synth.sin) {
-        const height = Math.max(...this.synth.sin) || (Math.min(...this.synth.sin) * - 1)
+        const height = this.synth.amplitude
         return (height + (height / 2))
       }
       return 60
@@ -65,6 +63,12 @@ export default {
 }
 </script>
 
-<style>
-
+<style scoped>
+.synth-graph {
+  height: 65vh;
+  width: 35%;
+  margin: 0;
+  padding: 2vh;
+  margin-top: 1vh;
+}
 </style>
