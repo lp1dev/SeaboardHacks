@@ -84,7 +84,9 @@ class Synthetizer {
 class CustomSynthetizer extends Synthetizer {
   constructor (name, configuration = defaultSynthConf, sin, cosin, disableNormalization = false) {
     super(name, configuration)
-    this.periodicWave = this.audioContext.createPeriodicWave(sin, cosin, {disableNormalization: disableNormalization})
+    if (MIDIController.compatibleBrowser) {
+      this.periodicWave = this.audioContext.createPeriodicWave(sin, cosin, {disableNormalization: disableNormalization})
+    }
     this.sin = sin
     this.cosin = cosin
     this.custom = true

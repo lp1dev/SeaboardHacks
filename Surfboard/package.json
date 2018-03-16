@@ -1,5 +1,5 @@
 {
-  "name": "roliweb",
+  "name": "Surfboard",
   "version": "1.0.0",
   "description": "A Vue.js project",
   "author": "lp1 <mail@lp1.eu>",
@@ -49,6 +49,7 @@
     "postcss-import": "^11.0.0",
     "postcss-loader": "^2.0.8",
     "postcss-url": "^7.2.1",
+    "push-dir": "^0.4.1",
     "rimraf": "^2.6.0",
     "semver": "^5.3.0",
     "shelljs": "^0.7.6",
