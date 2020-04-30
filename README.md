@@ -2,6 +2,8 @@
 
 ROLI (Ltd.) Seaboard Web Hacks, using [Seaboard Web API](https://github.com/lp1dev/Roli-Seaboard-Web-API).
 
+**This repository's file (except for this README) are outdated, check these repositories above for code and working API!**
+
 So far you can try Surfboard, which is a fully working PoC for the API supporting most of the Seaboard features :
 
 ## Surfboard
